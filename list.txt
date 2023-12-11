@@ -1,0 +1,98 @@
+<%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
+<%@ page import="entity.*,service.*,service.impl.*" %>
+<!-- 当前页面显示某版块的主题列表 -->
+<% 
+	int boardId = Integer.parseInt(request.getParameter("boardId"));
+	int p = Integer.parseInt(request.getParameter("page"));
+	int prep = p;
+	int nextp = p;
+	if(p>1){
+	    prep = p-1;
+	}
+	TopicBiz topicDao = new TopicBizImpl();
+	List listTopic = topicDao.findListTopic(p, boardId);
+	BoardBiz boardBiz = new BoardBizImpl();
+	Board board = boardBiz.findBoard(boardId);
+	UserBiz userDao = new UserBizImpl();
+    if(listTopic.size()==20){
+        nextp = p+1;
+    }
+%>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>帖子列表</title>
+
+<link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+<BODY>
+<div id="apDiv1">  		<div align="center" class="biaoti">校园BBS系统 </div>	</div>
+<% User loginUser = (User)session.getAttribute("user");
+if(loginUser == null){
+%>
+    <div class="STYLE4" id="apDiv2">您尚未 <a href="login.jsp" target="_blank">登录</a> |<a href="reg.jsp" target="_blank">注册</a></div>
+<%}else{%>
+    <div class="STYLE4" id="apDiv2">你好，<%=loginUser.getUserName()%> |<a href="logout" target="">注销</a></div>
+<%
+}
+%>
+<br/><br/><br/>
+<br/><br/><br/>
+	<!--      主体        -->
+	<DIV>
+		<!--      导航        -->
+		<br />
+		<DIV>
+			&gt;&gt;<B><a href="index.jsp">论坛首页</a></B>  <!-- 返回主页 -->
+			&gt;&gt; <B><a href="list.jsp?boardId=<%=boardId%>&page=1"><%=board.getBoardName()%></a></B>  <!-- 返回当前子版块首页 -->
+		</DIV>
+		<br />
+		<!--      新帖        -->
+		<DIV>
+			<A href="post.jsp?boardId=<%=boardId%>"><IMG src="image/post.gif" name="td_post"	border="0" id=td_post></A>
+		</DIV>
+		<!--         翻 页         -->
+		<DIV>
+			<a href="list.jsp?boardId=<%=boardId%>&page=<%=prep%>">上一页</a>| <a href="list.jsp?boardId=<%=boardId%>&page=<%=nextp%>">下一页</a>
+		</DIV>
+
+		<DIV class="t">
+			<TABLE border="1" cellSpacing="0" cellPadding="0" width="100%">
+				<TR>
+					<TH class="h" style="WIDTH: 100%" colSpan="4"><SPAN>&nbsp;</SPAN></TH>
+				</TR>
+				<!--       表 头           -->
+				<TR>
+					<TD>&nbsp;</TD>
+					<TD style="WIDTH: 80%" align="center" class="STYLE4">文章</TD>
+					<TD style="WIDTH: 10%" align="center" class="STYLE4">作者</TD>
+					<TD style="WIDTH: 10%" align="center" class="STYLE4">回复</TD>
+				</TR>
+				<!--         主 题 列 表        -->
+<% for(Object t:listTopic){
+		Topic topic = (Topic)t;
+		int topicId = topic.getTopicId();
+		User user = userDao.findUser(topic.getUserId());
+		ReplyBiz replyDao = new ReplyBizImpl();
+ %>
+				<TR >
+					<TD><IMG src="image/topic.gif" border=0></TD>
+					<TD style="FONT-SIZE: 15px"><A href="detail.jsp?boardId=<%=boardId%>&topicId=<%=topic.getTopicId()%>&page=1"><%=topic.getTitle() %></A></TD>  <!--主题标题  -->
+					<TD align="center"><%=user.getUserName() %></TD><!-- 主题作者 -->
+					<TD align="center"><%=replyDao.findCountReply(topicId) %></TD>     <!-- 主题回复回复数 -->
+				</TR>
+<%} %>
+				
+			</TABLE>
+		</DIV>
+		<!--            翻 页          -->
+		<DIV>
+			<a href="list.jsp?boardId=<%=boardId%>&page=<%=prep%>">上一页</a>| <a href="list.jsp?boardId=<%=boardId%>&page=<%=nextp%>">下一页</a>		</DIV>
+	</DIV>
+	<!--             声 明          -->
+	<BR />
+	
+</BODY>
+</HTML>
